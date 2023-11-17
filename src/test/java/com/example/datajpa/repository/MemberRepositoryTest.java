@@ -6,6 +6,9 @@ import com.example.datajpa.entity.Team;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,5 +148,29 @@ class MemberRepositoryTest {
         members.add(memberB);
 
         assertEquals(members, usersByUsernames);
+    }
+
+    @Test
+    public void paging() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+        PageRequest page = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        Page<Member> byAge = memberRepository.findByAge(age, page);
+
+        List<Member> content = byAge.getContent();
+        long totalElements = byAge.getTotalElements();
+
+        assertEquals(content.size(), 3);
+        assertEquals(totalElements, 5);
+        assertEquals(byAge.getNumber(), 0);
+        assertEquals(byAge.getTotalPages(), 2);
+        assertTrue(byAge.isFirst());
+        assertTrue(byAge.hasNext());
     }
 }

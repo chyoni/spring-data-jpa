@@ -2,6 +2,8 @@ package com.example.datajpa.repository;
 
 import com.example.datajpa.dto.MemberQueryDto;
 import com.example.datajpa.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +31,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     //! IN 절 컬렉션으로 조회
     @Query(value = "SELECT m FROM Member m WHERE m.username in :names")
     List<Member> findUsersByUsernames(@Param("names") Collection<String> names);
+
+    Page<Member> findByAge(int age, Pageable pageable);
 }
