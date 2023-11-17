@@ -24,8 +24,9 @@ public class Member {
 
     private String username;
 
-    public Member(String username) {
+    public Member(String username, int age) {
         this.username = username;
+        this.age = age;
     }
 
     public Member(String username, int age, Team team) {

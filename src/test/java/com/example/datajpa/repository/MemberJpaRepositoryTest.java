@@ -20,7 +20,7 @@ class MemberJpaRepositoryTest {
 
     @Test
     public void testMember() {
-        Member member = new Member("memberA");
+        Member member = new Member("memberA", 10);
 
         Member savedMember = memberJpaRepository.save(member);
 
@@ -33,8 +33,8 @@ class MemberJpaRepositoryTest {
 
     @Test
     public void basicCRUD() {
-        Member memberA = new Member("memberA");
-        Member memberB = new Member("memberB");
+        Member memberA = new Member("memberA", 10);
+        Member memberB = new Member("memberB", 10);
 
         memberJpaRepository.save(memberA);
         memberJpaRepository.save(memberB);
