@@ -5,6 +5,7 @@ import com.example.datajpa.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -43,4 +44,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Modifying(clearAutomatically = true) // executeUpdate() 후 영속성 컨텍스트 초기화;
     @Query(value = "UPDATE Member m SET m.age = m.age + 1 WHERE m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
+
+    @Override
+    @EntityGraph(attributePaths = {"team"}) // 얘는 그냥 페치 조인을 하는거
+    List<Member> findAll();
 }
