@@ -2,13 +2,11 @@ package com.example.datajpa.repository;
 
 import com.example.datajpa.dto.MemberQueryDto;
 import com.example.datajpa.entity.Member;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
@@ -48,4 +46,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Override
     @EntityGraph(attributePaths = {"team"}) // 얘는 그냥 페치 조인을 하는거
     List<Member> findAll();
+
+    /**
+     * 변경감지를 통해 업데이트를 치는 경우 영속성 컨텍스트는 변경감지를 체크하기 위해 기존 원본데이터(스냅샷)을 저장하는데 그런것들이 결국은 비용이다.
+     * 그런 비용조차도 최소한으로 하고싶을 때 이렇게 QueryHint를 사용해서 난 이거로 가져온 데이터는 변경을 절대 하지않을것이니 스냅샷도 만들지마!
+     * 라고 QueryHint로 알려줄 수 있다. 그게 아래와 같은 내용.
+     * */
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
+
 }

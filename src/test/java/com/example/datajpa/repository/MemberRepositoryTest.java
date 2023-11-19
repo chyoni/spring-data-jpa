@@ -289,4 +289,13 @@ class MemberRepositoryTest {
             System.out.println("member team = " + member.getTeam().getName());
         }
     }
+
+    @Test
+    public void queryHint() {
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        entityManager.flush();
+        entityManager.clear();
+
+    }
 }
