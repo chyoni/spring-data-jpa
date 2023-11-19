@@ -6,9 +6,7 @@ import com.example.datajpa.entity.Team;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,6 +150,56 @@ class MemberRepositoryTest {
 
     @Test
     public void paging() {
+        Team team = new Team("TEAMA");
+        teamRepository.save(team);
+
+        memberRepository.save(new Member("member1", 10, team));
+        memberRepository.save(new Member("member2", 10, team));
+        memberRepository.save(new Member("member3", 10, team));
+        memberRepository.save(new Member("member4", 10, team));
+        memberRepository.save(new Member("member5", 10, team));
+
+        int age = 10;
+        PageRequest page =
+                PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        Page<Member> byAge = memberRepository.findByAge(age, page);
+
+        List<MemberQueryDto> memberQueryDtos =
+                byAge.map(m -> new MemberQueryDto(m.getUsername(), m.getAge(), m.getTeam()))
+                        .toList();
+
+        List<Member> content = byAge.getContent(); // 데이터
+        long totalElements = byAge.getTotalElements(); // 전체 개수
+
+        assertEquals(content.size(), 3);
+        assertEquals(totalElements, 5);
+        assertEquals(byAge.getNumber(), 0); // 현재 페이지
+        assertEquals(byAge.getTotalPages(), 2); // 전체 페이지
+        assertTrue(byAge.isFirst()); // 첫번째 페이지입니까?
+        assertTrue(byAge.hasNext()); // 다음 페이지가 있습니까?
+
+        for (MemberQueryDto member : memberQueryDtos) {
+            System.out.println("member = " + member);
+        }
+
+        /*Pageable pageable = byAge.nextPageable();
+        Page<Member> byAge1 = memberRepository.findByAge(age, pageable);
+
+        assertEquals(byAge1.getContent().size(), 2);
+        assertEquals(byAge1.getTotalElements(), 5);
+        assertEquals(byAge1.getNumber(), 1);
+        assertEquals(byAge1.getTotalPages(), 2);
+        assertFalse(byAge1.isFirst());
+        assertFalse(byAge1.hasNext());
+
+        for (Member member : byAge1) {
+            System.out.println("member = " + member);
+        }*/
+    }
+
+    @Test
+    public void getSlice() {
         memberRepository.save(new Member("member1", 10));
         memberRepository.save(new Member("member2", 10));
         memberRepository.save(new Member("member3", 10));
@@ -159,18 +207,26 @@ class MemberRepositoryTest {
         memberRepository.save(new Member("member5", 10));
 
         int age = 10;
-        PageRequest page = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+        PageRequest page =
+                PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
 
-        Page<Member> byAge = memberRepository.findByAge(age, page);
+        Slice<Member> sliceByAge = memberRepository.getSliceByAge(age, page);
 
-        List<Member> content = byAge.getContent();
-        long totalElements = byAge.getTotalElements();
+        assertEquals(sliceByAge.getSize(), 3);
+        assertEquals(sliceByAge.getNumber(), 0);
+        assertEquals(sliceByAge.getNumberOfElements(), 3);
+        assertTrue(sliceByAge.isFirst());
+        assertTrue(sliceByAge.hasNext());
 
-        assertEquals(content.size(), 3);
-        assertEquals(totalElements, 5);
-        assertEquals(byAge.getNumber(), 0);
-        assertEquals(byAge.getTotalPages(), 2);
-        assertTrue(byAge.isFirst());
-        assertTrue(byAge.hasNext());
+        for (Member member : sliceByAge.getContent()) {
+            System.out.println("member = " + member);
+        }
+
+        Pageable pageable = sliceByAge.nextPageable();
+        Slice<Member> sliceByAge1 = memberRepository.getSliceByAge(age, pageable);
+
+        for (Member member : sliceByAge1.getContent()) {
+            System.out.println("member = " + member);
+        }
     }
 }
