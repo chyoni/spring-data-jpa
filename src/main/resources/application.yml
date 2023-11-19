@@ -12,6 +12,12 @@ spring:
       hibernate:
         format_sql: true
         # show_sql: true
+  data:
+    web:
+      # 글로벌 설정
+      pageable:
+        default-page-size: 10
+        max-page-size: 2000
 
 logging:
   level:
