@@ -3,6 +3,8 @@ package com.example.datajpa.repository;
 import com.example.datajpa.dto.MemberQueryDto;
 import com.example.datajpa.entity.Member;
 import com.example.datajpa.entity.Team;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +25,8 @@ class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Test
     public void testMember() {
@@ -228,5 +232,37 @@ class MemberRepositoryTest {
         for (Member member : sliceByAge1.getContent()) {
             System.out.println("member = " + member);
         }
+    }
+
+    @Test
+    public void bulk() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        int result = memberRepository.bulkAgePlus(20);
+        List<Member> notAcceptedBulk = memberRepository.findAll();
+        for (Member member : notAcceptedBulk) {
+            System.out.println("not accepted member = " + member);
+        }
+
+        /*! 이걸 하는 이유는 벌크 연산을 하는것은 DB에 다이렉트로 반영을 하는것이기 때문에 영속성 컨텍스트와는 무관하다.
+          ! 근데 영속성 컨텍스트의 속성중 하나인 같은 트랜잭션 내 영속 컨텍스트에 들어있는 객체는 동일성을 보장하기 때문에
+          ! 위에서 만든 멤버들은 벌크 연산을 수행한 후 이 트랜잭션안에서는 그 값이 반영되어 있는 상태가 아니다. 그래서 벌크 연산후에 같은 트랜잭션에서
+          ! 또 추가적인 로직이 있는 경우 반드시 영속성 컨텍스트를 초기화한 후 진행해야 한다.
+          ! 근데, 스프링 데이터 JPA가 @Modifying(clearAutomatically = true)로 해놓으면 아래 코드를 자동으로 실행해준다.
+        entityManager.flush();
+        entityManager.clear();
+         */
+
+        List<Member> acceptedBulk = memberRepository.findAll();
+        for (Member member : acceptedBulk) {
+            System.out.println("member = " + member);
+        }
+
+        assertEquals(result, 3);
+
     }
 }
