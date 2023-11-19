@@ -298,4 +298,9 @@ class MemberRepositoryTest {
         entityManager.clear();
 
     }
+
+    @Test
+    public void callCustom() {
+        List<Member> memberCustom = memberRepository.findMemberCustom();
+    }
 }
