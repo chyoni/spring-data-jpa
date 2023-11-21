@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -326,5 +327,61 @@ class MemberRepositoryTest {
         System.out.println("findMember updateDate = " + findMember.getLastModifiedDate());
         System.out.println("findMember createdBy = " + findMember.getCreatedBy());
         System.out.println("findMember lastModifiedBy = " + findMember.getLastModifiedBy());
+    }
+
+    @Test
+    public void specBasic() {
+        Team team = new Team("teamA");
+        teamRepository.save(team);
+
+        Member memberA = new Member("memberA", 10, team);
+        Member memberB = new Member("memberB", 20, team);
+        memberRepository.save(memberA);
+        memberRepository.save(memberB);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // Specification
+        Specification<Member> spec = MemberSpec.username("memberA").and(MemberSpec.teamName("teamA"));
+        List<Member> all = memberRepository.findAll(spec);
+
+        assertEquals(all.size(), 1);
+    }
+
+    @Test
+    public void queryByExample() {
+        Team team = new Team("teamA");
+        teamRepository.save(team);
+
+        Member memberA = new Member("memberA", 10, team);
+        Member memberB = new Member("memberB", 20, team);
+        memberRepository.save(memberA);
+        memberRepository.save(memberB);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Member member = new Member("memberA", 10);
+        Example<Member> example = Example.of(member);
+        List<Member> all = memberRepository.findAll(example);
+
+        assertEquals(all.size(), 1);
+    }
+
+    @Test
+    public void projections() {
+        Member memberA = new Member("memberA", 10);
+        Member memberB = new Member("memberB", 20);
+        memberRepository.save(memberA);
+        memberRepository.save(memberB);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<UsernameDto> members = memberRepository.findToDtoByUsername("memberA", UsernameDto.class);
+        for (UsernameDto member : members) {
+            System.out.println("member = " + member);
+        }
     }
 }

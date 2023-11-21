@@ -12,7 +12,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
 
-public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
+public interface MemberRepository
+        extends JpaRepository<Member, Long>, MemberRepositoryCustom, JpaSpecificationExecutor<Member> {
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
     @Query(value = "SELECT m FROM Member m WHERE m.username = :username AND m.age = :age")
@@ -54,5 +55,7 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
      * */
     @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
+
+    <T> List<T> findToDtoByUsername(@Param("username") String username, Class<T> clazz);
 
 }
