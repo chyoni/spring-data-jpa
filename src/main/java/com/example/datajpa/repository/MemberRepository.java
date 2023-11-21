@@ -56,6 +56,24 @@ public interface MemberRepository
     @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
 
+
+    /**
+     * Projections 이라는 기술인데, 원하는 필드만 가져오고 그것을 DTO로 변환하여 반환받고 싶을 때 사용한다.
+     * UsernameDto라는 클래스를 하나 만들면 그 클래스에서 필드로 정의한 필드들만 쿼리문에서 조회한 후 채워준다.
+     * */
+    List<UsernameDto> findProjectionsByUsername(@Param("username") String username);
+
+    /**
+     * 위에 Projections 기술을 응용해서 제네릭으로 받을수도 있다.
+     * */
     <T> List<T> findToDtoByUsername(@Param("username") String username, Class<T> clazz);
 
+
+    @Query(value = "SELECT * FROM Member WHERE username = ?", nativeQuery = true)
+    Member findByUsernameNative(String username);
+
+    @Query(value = "SELECT m.member_id as id, m.username as username, t.name as teamName FROM Member m LEFT JOIN Team t",
+            countQuery = "SELECT COUNT(*) FROM Member",
+            nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 }
